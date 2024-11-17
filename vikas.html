@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vikas Round Logo</title>
+  <style>
+    /* Fullscreen color black background */
+    body {
+      margin: 0;
+      height: 50vh;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fbc2eb, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: bgAnimation 15s infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Keyframes for background animation */
+    @keyframes bgAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Round logo color rgb */
+    .logo {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      background: #rgb;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #rgb;
+      text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+      animation: moveLogo 10s infinite;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Keyframes for logo movement */
+    @keyframes moveLogo {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(300px, 0); }
+      50% { transform: translate(300px, 300px); }
+      75% { transform: translate(0, 300px); }
+      100% { transform: translate(0, 0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">Vikas</div>
+</body>
+</html>
+
+
+
+
+
