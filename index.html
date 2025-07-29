@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VIP Prediction Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --neon-green: #00ff00;
+      --neon-red: #ff0000;
+      --neon-blue: #00a8ff;
+      --neon-purple: #9d00ff;
+      --neon-yellow: #fff700;
+    }
+    
+    body {
+      background: #000;
+      color: var(--neon-green);
+      font-family: 'Rajdhani', sans-serif;
+      margin: 0;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      opacity: 0.3;
+    }
+    
+    header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+    }
+    
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5em;
+      margin: 0;
+      text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+      letter-spacing: 3px;
+    }
+    
+    .subtitle {
+      color: #aaa;
+      margin-top: 5px;
+    }
+    
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .panel {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--neon-green);
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+      backdrop-filter: blur(5px);
+    }
+    
+    .panel-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5em;
+      margin-top: 0;
+      color: var(--neon-green);
+      text-shadow: 0 0 5px var(--neon-green);
+      border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .panel-content {
+      margin-top: 15px;
+    }
+    
+    .prediction-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    
+    .prediction-card {
+      background: rgba(0, 20, 0, 0.3);
+      border: 1px solid rgba(0, 255, 0, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .prediction-label {
+      font-size: 0.9em;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+    
+    .prediction-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .number {
+      color: var(--neon-yellow);
+    }
+    
+    .big {
+      color: var(--neon-blue);
+    }
+    
+    .small {
+      color: var(--neon-red);
+    }
+    
+    .green {
+      color: var(--neon-green);
+    }
+    
+    .red {
+      color: var(--neon-red);
+    }
+    
+    .violet {
+      color: var(--neon-purple);
+    }
+    
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+    
+    .history-table th {
+      background: rgba(0, 255, 0, 0.1);
+      padding: 8px;
+      text-align: center;
+    }
+    
+    .history-table td {
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    button {
+      padding: 10px 20px;
+      font-family: 'Orbitron', sans-serif;
+      background: none;
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.3s;
+      flex: 1;
+    }
+    
+    button:hover {
+      background: var(--neon-green);
+      color: #000;
+      box-shadow: 0 0 15px var(--neon-green);
+    }
+    
+    .manual-input {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    input {
+      flex: 1;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      border-radius: 5px;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    
+    .aviator-graph {
+      height: 200px;
+      background: rgba(0, 10, 0, 0.3);
+      border: 1px solid var(--neon-green);
+      border-radius: 5px;
+      margin-top: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .graph-line {
+      position: absolute;
+      height: 2px;
+      background: var(--neon-green);
+      width: 100%;
+      animation: graphRise 5s linear forwards;
+    }
+    
+    .crash-point {
+      position: absolute;
+      right: 10px;
+      background: var(--neon-red);
+      color: white;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.8em;
+    }
+    
+    @keyframes graphRise {
+      0% { top: 100%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: 0%; opacity: 0; }
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+    
+    .status {
+      font-size: 0.8em;
+      margin-top: 10px;
+      text-align: right;
+      color: #aaa;
+    }
+    
+    .blink {
+      animation: pulse 1.5s infinite;
+    }
+    
+    @media (max-width: 768px) {
+      .prediction-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  
+  <header>
+    <h1>VIP PREDICTION PANEL</h1>
+    <div class="subtitle">Advanced Aviator & WinGo Prediction System</div>
+  </header>
+  
+  <div class="container">
+    <!-- Aviator Predictor Panel -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>AVIATOR PREDICTOR</span>
+        <span class="blink">LIVE</span>
+      </div>
+      <div class="panel-content">
+        <div class="prediction-grid">
+          <div class="prediction-card">
+            <div class="prediction-label">Next Crash Point</div>
+            <div class="prediction-value" id="aviator-crash">1.85x</div>
+          </div>
+          <div class="prediction-card">
+            <div class="prediction-label">Confidence</div>
+            <div class="prediction-value" id="aviator-confidence">87%</div>
+          </div>
+        </div>
+        
+        <div class="aviator-graph">
+          <div class="graph-line" id="graph-line"></div>
+          <div class="crash-point" id="crash-point">1.85x</div>
+        </div>
+        
+        <div class="controls">
+          <button id="refresh-aviator">Refresh Prediction</button>
+          <button id="auto-aviator">Auto Mode</button>
+        </div>
+        
+        <div class="manual-input">
+          <input type="text" id="aviator-period" placeholder="Enter Period Number">
+          <button id="fetch-aviator">Fetch</button>
+        </div>
+        
+        <div class="status">Last updated: <span id="aviator-updated">Just now</span></div>
+      </div>
+    </div>
+    
+    <!-- WinGo Predictor Panel -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>WINGO PREDICTOR</span>
+        <span class="blink">LIVE</span>
+      </div>
+      <div class="panel-content">
+        <div class="prediction-grid">
+          <div class="prediction-card">
+            <div class="prediction-label">Predicted Number</div>
+            <div class="prediction-value number" id="wingo-number">5</div>
+          </div>
+          <div class="prediction-card">
+            <div class="prediction-label">Predicted Color</div>
+            <div class="prediction-value green" id="wingo-color">Green</div>
+          </div>
+          <div class="prediction-card">
+            <div class="prediction-label">Predicted Size</div>
+            <div class="prediction-value big" id="wingo-size">Big</div>
+          </div>
+          <div class="prediction-card">
+            <div class="prediction-label">Accuracy</div>
+            <div class="prediction-value" id="wingo-accuracy">92%</div>
+          </div>
+        </div>
+        
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Number</th>
+              <th>Color</th>
+              <th>Size</th>
+            </tr>
+          </thead>
+          <tbody id="wingo-history">
+            <!-- History will be populated by JavaScript -->
+          </tbody>
+        </table>
+        
+        <div class="controls">
+          <button id="refresh-wingo">Refresh Prediction</button>
+          <button id="auto-wingo">Auto Mode</button>
+        </div>
+        
+        <div class="manual-input">
+          <input type="text" id="wingo-period" placeholder="Enter Period Number">
+          <button id="fetch-wingo">Fetch</button>
+        </div>
+        
+        <div class="status">Last updated: <span id="wingo-updated">Just now</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Matrix background
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    const chars = '01アカツキVIPPREDICTOR';
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff00';
+      ctx.font = fontSize + 'px monospace';
+      drops.forEach((y, i) => {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, y * fontSize);
+        if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      });
+    }
+    setInterval(drawMatrix, 33);
+
+    // Aviator Predictor
+    let aviatorAutoMode = false;
+    let wingoAutoMode = false;
+    
+    function generateAviatorPrediction() {
+      // Generate random crash point between 1.2x and 10x with some bias
+      let crashPoint;
+      if (Math.random() > 0.7) {
+        crashPoint = (Math.random() * 3 + 1.2).toFixed(2);
+      } else {
+        crashPoint = (Math.random() * 7 + 3).toFixed(2);
+      }
+      
+      const confidence = Math.floor(Math.random() * 15 + 80); // 80-95%
+      
+      document.getElementById('aviator-crash').textContent = crashPoint + 'x';
+      document.getElementById('aviator-confidence').textContent = confidence + '%';
+      document.getElementById('crash-point').textContent = crashPoint + 'x';
+      
+      // Animate graph
+      const graphLine = document.getElementById('graph-line');
+      graphLine.style.animation = 'none';
+      void graphLine.offsetWidth; // Trigger reflow
+      graphLine.style.animation = 'graphRise 5s linear forwards';
+      
+      // Update timestamp
+      const now = new Date();
+      document.getElementById('aviator-updated').textContent = now.toLocaleTimeString();
+    }
+    
+    // WinGo Predictor
+    const wingoHistory = [
+      { period: '10785', number: 3, color: 'red', size: 'small' },
+      { period: '10784', number: 7, color: 'red', size: 'big' },
+      { period: '10783', number: 1, color: 'red', size: 'small' },
+      { period: '10782', number: 6, color: 'green', size: 'big' },
+      { period: '10781', number: 2, color: 'red', size: 'small' },
+      { period: '10780', number: 9, color: 'green', size: 'big' }
+    ];
+    
+    function getWingoColor(number) {
+      if (number === 0) return 'violet';
+      if (number === 5) return 'red';
+      return number % 2 === 0 ? 'green' : 'red';
+    }
+    
+    function getWingoSize(number) {
+      return number >= 5 ? 'big' : 'small';
+    }
+    
+    function generateWingoPrediction() {
+      // Generate prediction based on patterns
+      const lastNumbers = wingoHistory.slice(0, 5).map(item => item.number);
+      const lastColors = wingoHistory.slice(0, 5).map(item => item.color);
+      const lastSizes = wingoHistory.slice(0, 5).map(item => item.size);
+      
+      // Simple prediction logic
+      let predNumber;
+      if (lastNumbers.filter(n => n < 5).length >= 4) {
+        predNumber = Math.floor(Math.random() * 5 + 5); // Bias towards big
+      } else if (lastNumbers.filter(n => n >= 5).length >= 4) {
+        predNumber = Math.floor(Math.random() * 5); // Bias towards small
+      } else {
+        predNumber = Math.floor(Math.random() * 10);
+      }
+      
+      let predColor;
+      if (lastColors.filter(c => c === 'green').length >= 4) {
+        predColor = 'red';
+      } else if (lastColors.filter(c => c === 'red').length >= 4) {
+        predColor = 'green';
+      } else {
+        predColor = getWingoColor(predNumber);
+      }
+      
+      const predSize = getWingoSize(predNumber);
+      const accuracy = Math.floor(Math.random() * 10 + 88); // 88-98%
+      
+      // Update display
+      document.getElementById('wingo-number').textContent = predNumber;
+      document.getElementById('wingo-color').textContent = predColor.charAt(0).toUpperCase() + predColor.slice(1);
+      document.getElementById('wingo-color').className = 'prediction-value ' + predColor;
+      document.getElementById('wingo-size').textContent = predSize.charAt(0).toUpperCase() + predSize.slice(1);
+      document.getElementById('wingo-size').className = 'prediction-value ' + predSize;
+      document.getElementById('wingo-accuracy').textContent = accuracy + '%';
+      
+      // Update timestamp
+      const now = new Date();
+      document.getElementById('wingo-updated').textContent = now.toLocaleTimeString();
+    }
+    
+    function updateWingoHistory() {
+      // Generate new result
+      const newNumber = Math.floor(Math.random() * 10);
+      const newColor = getWingoColor(newNumber);
+      const newSize = getWingoSize(newNumber);
+      const newPeriod = (parseInt(wingoHistory[0].period) + 1).toString();
+      
+      // Add to beginning of history
+      wingoHistory.unshift({
+        period: newPeriod,
+        number: newNumber,
+        color: newColor,
+        size: newSize
+      });
+      
+      // Keep only last 20 entries
+      if (wingoHistory.length > 20) {
+        wingoHistory.pop();
+      }
+      
+      // Update table
+      const tableBody = document.getElementById('wingo-history');
+      tableBody.innerHTML = '';
+      
+      wingoHistory.forEach(item => {
+        const row = document.createElement('tr');
+        
+        const periodCell = document.createElement('td');
+        periodCell.textContent = item.period;
+        
+        const numberCell = document.createElement('td');
+        numberCell.textContent = item.number;
+        numberCell.className = 'number';
+        
+        const colorCell = document.createElement('td');
+        colorCell.textContent = item.color.charAt(0).toUpperCase() + item.color.slice(1);
+        colorCell.className = item.color;
+        
+        const sizeCell = document.createElement('td');
+        sizeCell.textContent = item.size.charAt(0).toUpperCase() + item.size.slice(1);
+        sizeCell.className = item.size;
+        
+        row.appendChild(periodCell);
+        row.appendChild(numberCell);
+        row.appendChild(colorCell);
+        row.appendChild(sizeCell);
+        
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // Event listeners
+    document.getElementById('refresh-aviator').addEventListener('click', function() {
+      generateAviatorPrediction();
+    });
+    
+    document.getElementById('auto-aviator').addEventListener('click', function() {
+      aviatorAutoMode = !aviatorAutoMode;
+      this.textContent = aviatorAutoMode ? 'Stop Auto' : 'Auto Mode';
+      this.style.background = aviatorAutoMode ? 'var(--neon-red)' : '';
+      this.style.borderColor = aviatorAutoMode ? 'var(--neon-red)' : 'var(--neon-green)';
+    });
+    
+    document.getElementById('refresh-wingo').addEventListener('click', function() {
+      generateWingoPrediction();
+      updateWingoHistory();
+    });
+    
+    document.getElementById('auto-wingo').addEventListener('click', function() {
+      wingoAutoMode = !wingoAutoMode;
+      this.textContent = wingoAutoMode ? 'Stop Auto' : 'Auto Mode';
+      this.style.background = wingoAutoMode ? 'var(--neon-red)' : '';
+      this.style.borderColor = wingoAutoMode ? 'var(--neon-red)' : 'var(--neon-green)';
+    });
+    
+    document.getElementById('fetch-aviator').addEventListener('click', function() {
+      const period = document.getElementById('aviator-period').value;
+      if (period) {
+        alert('Fetching data for Aviator period: ' + period);
+        // In a real app, you would fetch data from an API here
+      }
+    });
+    
+    document.getElementById('fetch-wingo').addEventListener('click', function() {
+      const period = document.getElementById('wingo-period').value;
+      if (period) {
+        alert('Fetching data for WinGo period: ' + period);
+        // In a real app, you would fetch data from an API here
+      }
+    });
+    
+    // Initialize
+    generateAviatorPrediction();
+    generateWingoPrediction();
+    updateWingoHistory();
+    
+    // Auto update if enabled
+    setInterval(() => {
+      if (aviatorAutoMode) {
+        generateAviatorPrediction();
+      }
+    }, 10000);
+    
+    setInterval(() => {
+      if (wingoAutoMode) {
+        generateWingoPrediction();
+        updateWingoHistory();
+      }
+    }, 10000);
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+    });
+  </script>
+</body>
+</html>
